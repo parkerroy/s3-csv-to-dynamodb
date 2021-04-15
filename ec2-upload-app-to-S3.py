@@ -56,8 +56,8 @@ def main():
 
 def upload_files(newfile):
     s3 = boto3.resource('s3')
-    bucket = 'machinelearningupload'
-    #bucket = s3.Bucket('gregsupload')
+    bucket = 'parkerroy-source'
+    #bucket = s3.Bucket('parkerroy-source')
     file_details = newfile.name
     content = newfile.getvalue()
 
