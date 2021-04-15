@@ -1,16 +1,38 @@
 import pandas as pd
+import yfinance as yf
 import streamlit as st
 import boto3
 
 st.write("""
-        # Upload file to S3
+        # Simple Stock Price App
+
+        Shown are the stock **closing price** and ***volume*** of Google!
 
         """)
+
+# https://towardsdatascience.com/how-to-get-stock-data-using-python-c0de1df17e75
+#define the ticker symbol
+tickerSymbol = 'GOOGL'
+#get data on this ticker
+tickerData = yf.Ticker(tickerSymbol)
+#get the historical prices for this ticker
+tickerDf = tickerData.history(period='1d', start='2010-5-31', end='2020-5-31')
+# Open  High    Low Close   Volume  Dividends   Stock Splits
+
+st.write("""
+        ## Closing Price
+        """)
+st.line_chart(tickerDf.Close)
+st.write("""
+        ## Volume Price
+        """)
+st.line_chart(tickerDf.Volume)
 
 STYLE = """
 <style>
 img {
     max-width: 100%;
+
 }
 </style>
 """
@@ -22,12 +44,11 @@ def main():
 
     newfile = st.file_uploader("Upload file", type="csv")
     show_file = st.empty()
-    
+
     if not newfile:
         show_file.info("Please upload a file of type: " + ", ".join(["csv"]))
         return
 
-    content = newfile.getvalue()
     upload_files(newfile)
 
     data = pd.read_csv(newfile)
@@ -35,12 +56,14 @@ def main():
 
 def upload_files(newfile):
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket('<S3 BUCKET NAME>')
+    bucket = 'machinelearningupload'
+    #bucket = s3.Bucket('gregsupload')
+    file_details = newfile.name
     content = newfile.getvalue()
 
-    s3.Bucket('<S3 BUCKET NAME>').put_object(Key='<OBJECT NAME>', Body=content)
+    s3.Bucket(bucket).put_object(Key=file_details, Body=content)
 
-    print("Upload Successful")
+    print(file_details, "Uploaded Successfully to S3 Bucket:", bucket)
     return True
 
 main()
